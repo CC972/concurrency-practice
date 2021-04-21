@@ -17,6 +17,25 @@ func main() {
 	fmt.Println(superHash)
 }
 
+func superHash(salts []string, complexity string) int {
+	total := 0
+	var wg sync.WaitGroup
+
+	for _, salt := range salts {
+		wg.Add(1)
+		go accumulatingHash(&wg, &total, salt, complexity)
+	}
+
+	wg.Wait()
+
+	return total
+}
+
+func accumulatingHash(wg *sync.WaitGroup, acc *int, salt string, complexity string) {
+	*acc += hash(salt, complexity)
+	wg.Done()
+}
+
 func hash(salt string, complexity string) int {
 	i := 0
 
@@ -30,23 +49,4 @@ func hash(salt string, complexity string) int {
 
 		i++
 	}
-}
-
-func accumulatingHash(wg *sync.WaitGroup, acc *int, salt string, complexity string) {
-	*acc += hash(salt, complexity)
-	wg.Done()
-}
-
-func superHash(salts []string, complexity string) int {
-	total := 0
-	var wg sync.WaitGroup
-
-	for _, salt := range salts {
-		wg.Add(1)
-		go accumulatingHash(&wg, &total, salt, complexity)
-	}
-
-	wg.Wait()
-
-	return total
 }
